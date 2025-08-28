@@ -46,15 +46,17 @@ then
         sleep 1
     done
 
->&2 echo "Postgres is up and running on port ${DB_PORT}"
+    # Create the application user
+    CREATE_QUERY="CREATE USER ${APP_USER} WITH PASSWORD '${APP_USER_PWD}';"
+    docker exec -it "${CONTAINER_NAME}" psql -U "${SUPERUSER}" -c "${CREATE_QUERY}"
 
-# Create the application user
-CREATE_QUERY="CREATE USER ${APP_USER} WITH PASSWORD '${APP_USER_PWD}';"
-docker exec -it "${CONTAINER_NAME}" psql -U "${SUPERUSER}" -c "${CREATE_QUERY}"
+    # Grant create db privileges to the app user
+    GRANT_QUERY="ALTER USER ${APP_USER} CREATEDB;"
+    docker exec -it "${CONTAINER_NAME}" psql -U "${SUPERUSER}" -c "${GRANT_QUERY}"
+fi
 
-# Grant create db privileges to the app user
-GRANT_QUERY="ALTER USER ${APP_USER} CREATEDB;"
-docker exec -it "${CONTAINER_NAME}" psql -U "${SUPERUSER}" -c "${GRANT_QUERY}"
+>&2 echo "Postgres is up and running on port ${DB_PORT} - running migrations now!"
+
 
 
 DATABASE_URL=postgres://${APP_USER}:${APP_USER_PWD}@localhost:${DB_PORT}/${APP_DB_NAME}
