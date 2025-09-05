@@ -2,6 +2,7 @@ use secrecy::Secret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::sync::LazyLock;
 use uuid::Uuid;
+use wiremock::MockServer;
 use zero2prod::configuration::{DatabaseSettings, get_configuration};
 use zero2prod::startup::{Application, get_connection_pool};
 use zero2prod::telemetry::{get_subscriber, init_subscriber};
@@ -21,6 +22,7 @@ static TRACING: LazyLock<()> = LazyLock::new(|| {
 pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
+    pub email_server: MockServer,
 }
 
 impl TestApp {
@@ -38,10 +40,13 @@ impl TestApp {
 pub async fn spawn_app() -> TestApp {
     LazyLock::force(&TRACING);
 
+    let email_server = MockServer::start().await;
+
     let configuration = {
         let mut c = get_configuration().expect("Failed to read configuration.");
         c.database.database_name = Uuid::new_v4().to_string();
         c.application.port = 0;
+        c.email_client.base_url = email_server.uri();
         c
     };
 
@@ -55,6 +60,7 @@ pub async fn spawn_app() -> TestApp {
     TestApp {
         address,
         db_pool: get_connection_pool(&configuration.database),
+        email_server,
     }
 }
 
