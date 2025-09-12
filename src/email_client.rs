@@ -40,6 +40,7 @@ impl EmailClient {
             subject,
             html_body: html_content,
             text_body: text_content,
+            message_stream: "outbound",
         };
         self.http_client
             .post(&url)
@@ -63,6 +64,7 @@ struct SendEmailRequest<'a> {
     subject: &'a str,
     html_body: &'a str,
     text_body: &'a str,
+    message_stream: &'a str,
 }
 
 #[cfg(test)]
