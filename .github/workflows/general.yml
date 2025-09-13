@@ -36,7 +36,7 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres:14
+        image: postgres:17
         # Environment variables scoped only for the `postgres` element
         env:
           POSTGRES_USER: postgres
@@ -46,6 +46,10 @@ jobs:
         # Opens tcp port 5432 on the host and service container
         ports:
           - 5432:5432
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
     steps:
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
@@ -126,13 +130,17 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:14
+        image: postgres:17
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v4
       - name: Install the Rust toolchain

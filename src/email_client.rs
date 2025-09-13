@@ -97,6 +97,7 @@ mod tests {
                     && body.get("Subject").is_some()
                     && body.get("HtmlBody").is_some()
                     && body.get("TextBody").is_some()
+                    && body.get("MessageStream").is_some()
             } else {
                 false
             }
